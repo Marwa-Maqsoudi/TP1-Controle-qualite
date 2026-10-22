@@ -37,12 +37,20 @@ def valider_code(code: str) -> bool:
 # --- Étape 2 : décider ----------------------------------------------------------------------------
 def ecart(mesure: float, nominal: float = NOMINAL) -> float:
     """Écart à la cote nominale, arrondi au micromètre (3 décimales) pour éliminer le bruit des flottants."""
-    raise NotImplementedError("à compléter")
+    return round(mesure - nominal, 3)
 
 
 def verdict(mesure: float, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> str:
     """Renvoie "conforme", "à reprendre" (trop gros : on peut réusiner) ou "rebut" (trop petit)."""
-    raise NotImplementedError("à compléter")
+    if tolerance <= 0:
+        raise ValueError("la tolérance doit être positive")
+
+    if abs(ecart(mesure, nominal)) <= tolerance:
+        return "conforme"
+    elif ecart(mesure, nominal) > 0:
+        return "à reprendre"
+    else:
+        return "rebut"
 
 
 # --- Étape 3 : analyser une ligne -----------------------------------------------------------------
