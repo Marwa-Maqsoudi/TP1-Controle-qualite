@@ -59,7 +59,18 @@ def analyser_ligne(ligne: str, *, nominal: float = NOMINAL, tolerance: float = T
 
     Lève ValueError si la ligne n'a pas deux champs, si le code ou la mesure est invalide.
     """
-    raise NotImplementedError("à compléter")
+    analyse = ligne.split(";")
+    if len(analyse) != 2:
+        raise ValueError(f"2 champs attendus, {len(analyse)} trouvé")
+    
+    code = analyse[0].strip().upper()
+    if not valider_code(code):
+        raise ValueError(f"code invalide : {code!r}")
+
+    mesure = lire_mesure(analyse[1].strip())
+    resultat = verdict(mesure, nominal, tolerance)
+
+    return (code, mesure, resultat)
 
 
 # --- Étape 4 : analyser un lot --------------------------------------------------------------------
@@ -70,7 +81,7 @@ def analyser_lot(lignes: list[str], **reglages) -> tuple[list[tuple[str, float, 
     son message est ajouté à erreurs, sous la forme "ligne 4 : mesure invalide : 'abc'".
     Les réglages (nominal, tolerance) sont transmis tels quels à analyser_ligne.
     """
-    raise NotImplementedError("à compléter")
+    
 
 
 def compter_verdicts(resultats: list[tuple[str, float, str]]) -> tuple[int, int, int]:
