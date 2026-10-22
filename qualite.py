@@ -7,17 +7,31 @@ TOLERANCE = 0.05   # tolérance admise : 25,00 ± 0,05 mm
 
 # --- Étape 1 : lire les données -----------------------------------------------------------------
 def lire_mesure(texte: str) -> float:
-    """Convertit une mesure saisie par le palpeur en nombre : " 25,03 mm" -> 25.03.
+   
+    texte=texte.strip().lower()
 
-    Accepte la virgule ou le point, l'unité "mm" (collée ou non) et les espaces autour.
-    Lève ValueError si le texte n'est pas une mesure strictement positive et finie.
-    """
-    raise NotImplementedError("à compléter")
+    if texte.endswith("mm"):
+        texte=texte.removesuffix("mm").strip()
+
+    texte=texte.replace(",", ".")
+
+    try:
+        mesure=float(texte)
+    except ValueError:
+        raise ValueError(f"mesure invalide : {texte!r}")
+
+    if not math.isfinite(mesure) or mesure <=0:
+        raise ValueError(f"mesure invalide : {texte!r}")
+
+    return mesure
 
 
 def valider_code(code: str) -> bool:
     """Vrai si le code pièce respecte le format AAA-9999 : trois majuscules, un tiret, quatre chiffres."""
-    raise NotImplementedError("à compléter")
+    if len(code) != 8:
+        return False
+
+    return (code[:3].isalpha() and code[:3].isupper() and code[:3].isascii() and code[3] == "-" and code[4:].isdigit())
 
 
 # --- Étape 2 : décider ----------------------------------------------------------------------------
