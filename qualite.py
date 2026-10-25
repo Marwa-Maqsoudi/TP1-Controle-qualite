@@ -61,7 +61,7 @@ def analyser_ligne(ligne: str, *, nominal: float = NOMINAL, tolerance: float = T
     """
     analyse = ligne.split(";")
     if len(analyse) != 2:
-        raise ValueError(f"2 champs attendus, {len(analyse)} trouvé")
+        raise ValueError(f"2 champs attendus, {len(analyse)} trouvé(s)")
     
     code = analyse[0].strip().upper()
     if not valider_code(code):
@@ -147,7 +147,30 @@ def capabilite(mesures: list[float], *, nominal: float = NOMINAL, tolerance: flo
 # --- Étape 6 : le rapport -------------------------------------------------------------------------
 def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> str:
     """Construit le rapport de contrôle d'un lot, sous forme d'une seule chaîne (une ligne par pièce)."""
-    raise NotImplementedError("à compléter")
+    resultats, erreurs = analyser_lot(lignes, nominal=nominal, tolerance=tolerance)
+    lignes_rapport = []
+    lignes_rapport.append(f"Contrôle des axes : {nominal:.2f} ± {tolerance:.2f} mm")
+    lignes_rapport.append(f"{'Code':<10} {'Mesure':>7} {'Écart':>8}   Verdict") 
+      
+    for code, mesure, verdict in resultats:
+        e= ecart(mesure, nominal)
+        lignes_rapport.append(f"{code:<10} {mesure:>7.3f} {e:>+8.3f}   {verdict}")        
+        
+    conformes, a_reprendre, rebuts = compter_verdicts(resultats)
+    taux = conformes / len(resultats) if len(resultats)> 0 else 0
+    lignes_rapport.append(f"Pièces : {len(resultats)} | conformes : {conformes} ({taux:.1%}) | à reprendre : {a_reprendre} | rebuts : {rebuts}")
+    
+    if len(resultats) >= 2:
+        mesures = [mesure for code, mesure, verdict in resultats]
+        cp, cpk = capabilite(mesures, nominal=nominal, tolerance=tolerance)
+        conclusion = "procédé capable" if cpk >= 1.33 else "procédé NON capable"
+        lignes_rapport.append(f"Cp = {cp:.2f} | Cpk = {cpk:.2f} -> {conclusion}")    
+    if erreurs:
+        lignes_rapport.append(f"Lignes rejetées : {len(erreurs)}")
+        for erreur in erreurs:
+            lignes_rapport.append(f"  {erreur}")
+    
+    return "\n".join(lignes_rapport)
 
 
 # --- Étape 8 (à la maison) : histogramme ----------------------------------------------------------
