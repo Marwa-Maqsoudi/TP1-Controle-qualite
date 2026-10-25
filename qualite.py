@@ -112,12 +112,19 @@ def compter_verdicts(resultats: list[tuple[str, float, str]]) -> tuple[int, int,
 # --- Étape 5 : statistiques et capabilité ---------------------------------------------------------
 def moyenne(*valeurs: float) -> float:
     """Moyenne d'un nombre quelconque de valeurs. Lève ValueError s'il n'y en a aucune."""
-    raise NotImplementedError("à compléter")
+    if not valeurs:
+        raise ValueError("aucune valeur fournie")
+    return sum(valeurs) / len(valeurs)
 
 
 def ecart_type(*valeurs: float) -> float:
     """Écart type d'échantillon (division par n - 1). Lève ValueError avec moins de deux valeurs."""
-    raise NotImplementedError("à compléter")
+    n = len(valeurs)
+    if n < 2:
+        raise ValueError("au moins deux valeurs sont nécessaires pour calculer l'écart type")
+    m = moyenne(*valeurs)
+    variance = sum((x - m) ** 2 for x in valeurs) / (n - 1)
+    return math.sqrt(variance)
 
 
 def capabilite(mesures: list[float], *, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> tuple[float, float]:
@@ -126,7 +133,15 @@ def capabilite(mesures: list[float], *, nominal: float = NOMINAL, tolerance: flo
     Cp  = largeur de la tolérance / (6 sigma)                  : le procédé est-il assez précis ?
     Cpk = distance de la moyenne à la limite la plus proche / (3 sigma) : est-il bien centré ?
     """
-    raise NotImplementedError("à compléter")
+    tmin = nominal - tolerance
+    tmax = nominal + tolerance
+    m=moyenne(*mesures)
+    s=ecart_type(*mesures)
+    if s == 0:
+        raise ValueError("écart type nul, impossible de calculer Cp et Cpk")
+    cp = (tmax - tmin) / (6 * s) 
+    cpk = min((tmax - m) / (3 * s), (m - tmin) / (3 * s))
+    return (round(cp, 2), round(cpk, 2))
 
 
 # --- Étape 6 : le rapport -------------------------------------------------------------------------
