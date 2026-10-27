@@ -179,4 +179,19 @@ def histogramme(mesures: list[float], *, debut: float, pas: float, nb_classes: i
 
     Les mesures hors de [debut, debut + nb_classes * pas[ sont ignorées.
     """
-    raise NotImplementedError("à compléter")
+    lignes = []
+
+    for i in range(nb_classes):
+        borne_inf = debut + i * pas
+        borne_sup = debut + (i + 1) * pas
+
+        nombre = sum(
+            1 for mesure in mesures
+            if borne_inf <= mesure < borne_sup
+        )
+
+        ligne = f"[{borne_inf:.3f} ; {borne_sup:.3f}[ " + "*" * nombre
+        lignes.append(ligne)
+
+    return "\n".join(lignes)
+
